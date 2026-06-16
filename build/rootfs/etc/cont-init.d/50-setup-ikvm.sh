@@ -25,7 +25,7 @@ APP_CACHE_DIR=$XDG_CACHE_HOME
 
 get_launch_jnlp() {
     fail=1
-    url="https://$KVM_HOST"
+    url="http://$KVM_HOST"
     temp=$(mktemp)
     if curl --fail -sk --cookie-jar "$temp" -XPOST "$url/cgi/login.cgi" \
           --data "name=$KVM_USER&pwd=$KVM_PASS&check=00" -o/dev/null; then
@@ -99,6 +99,21 @@ if ! test -f "$JAR"; then
         exit 1
     fi
 fi
+
+apt update
+apt install zip -y
+mkdir -p /tmp/stunnel/res/
+unzip -j $JAR res/linux/stunnel.conf -d /tmp/stunnel/res/linux/
+sed -i 's/^verify = 3$/verify = 0/' /tmp/stunnel/res/linux/stunnel.conf
+sed -i 's/^; output = stunnel\.log$/output = \/tmp\/stunnel\.log/' /tmp/stunnel/res/linux/stunnel.conf
+unzip -j $JAR res/win/stunnel.conf -d /tmp/stunnel/res/win/
+sed -i 's/^verify = 3$/verify = 0/' /tmp/stunnel/res/win/stunnel.conf
+sed -i 's/^; output = stunnel\.log$/output = \/tmp\/stunnel\.log/' /tmp/stunnel/res/win/stunnel.conf
+unzip -j $JAR res/mac/stunnel.conf -d /tmp/stunnel/res/mac/
+sed -i 's/^verify = 3$/verify = 0/' /tmp/stunnel/res/mac/stunnel.conf
+sed -i 's/^; output = stunnel\.log$/output = \/tmp\/stunnel\.log/' /tmp/stunnel/res/mac/stunnel.conf
+cd /tmp/stunnel
+zip -r $JAR .
 
 echo $JAR > /etc/cont-env.d/KVM_JAR_FILE
 echo $(get_username "$JNLP") > /etc/cont-env.d/KVM_EPHEMERAL_USERNAME
