@@ -111,6 +111,11 @@ if [ ! -f "${JAR:-}" ]; then
     fi
 fi
 
+# Ensure native libraries are always copied to java.library.path
+mkdir -p /config/xdg/cache
+cd "$APP_CACHE_DIR"
+cp -f libiKVM*.so /config/xdg/cache/ 2>/dev/null || true
+
 apt update
 apt install -y zip
 
